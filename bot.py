@@ -182,9 +182,9 @@ async def main():
             youtube_link = f"https://www.youtube.com/watch?v={youtube_video_id}"
             print(youtube_link)
             try:
-                # transcript_list = YouTubeTranscriptApi.get_transcript(youtube_video_id)
-                # transcript = " ".join(entry["text"] for entry in transcript_list)
-                transcript = get_youtube_transcript(youtube_link)
+                transcript_list = YouTubeTranscriptApi.get_transcript(youtube_video_id, languages=['en'])
+                transcript = " ".join(entry["text"] for entry in transcript_list)
+                # transcript = get_youtube_transcript(youtube_link)
             except Exception as e:
                 logging.error(f"Error fetching transcript: {e}")
                 transcript = "Transcript unavailable."
