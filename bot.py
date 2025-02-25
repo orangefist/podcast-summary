@@ -127,6 +127,30 @@ def save_last_episode_id(episode_id):
     with open(LAST_EPISODE_FILE, "w") as f:
         f.write(episode_id)
 
+def extract_video_id(url):
+    """
+    Extracts the video ID from a YouTube URL.
+    Note: This is a basic implementation and may not cover all URL formats.
+    """
+    # Try to match the standard URL format.
+    match = re.search(r"(?:v=|\/)([0-9A-Za-z_-]{11})", url)
+    if match:
+        return match.group(1)
+    else:
+        raise ValueError("Invalid YouTube URL or unable to extract video ID.")
+
+def get_youtube_transcript(video_url):
+    """
+    Fetches the transcript of a YouTube video using its video ID.
+    Returns the transcript as a single concatenated string.
+    """
+    video_id = extract_video_id(video_url)
+    # Retrieve the transcript (if available)
+    transcript_list = YouTubeTranscriptApi.get_transcript(video_id)
+    # Concatenate the transcript pieces into a single string.
+    transcript = " ".join([entry["text"] for entry in transcript_list])
+    return transcript
+
 
 async def main():
     episode, latest_id = check_new_episode()
@@ -158,8 +182,9 @@ async def main():
             youtube_link = f"https://www.youtube.com/watch?v={youtube_video_id}"
             print(youtube_link)
             try:
-                transcript_list = YouTubeTranscriptApi.get_transcript(youtube_video_id)
-                transcript = " ".join(entry["text"] for entry in transcript_list)
+                # transcript_list = YouTubeTranscriptApi.get_transcript(youtube_video_id)
+                # transcript = " ".join(entry["text"] for entry in transcript_list)
+                transcript = get_youtube_transcript(youtube_link)
             except Exception as e:
                 logging.error(f"Error fetching transcript: {e}")
                 transcript = "Transcript unavailable."
