@@ -32,6 +32,7 @@ if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID or not GEMINI_API_KEY:
 HUBERMAN_RSS_FEED = "https://feeds.megaphone.fm/hubermanlab"
 LAST_EPISODE_FILE = "last_episode.txt"
 
+
 def extract_youtube_video_id_from_url(site_url):
     """
     Given a Huberman Lab episode URL, fetch the page HTML,
@@ -65,17 +66,6 @@ def extract_youtube_video_id_from_url(site_url):
             return match.group(1)
     return None
 
-def get_youtube_transcript_from_page(page_url):
-    """
-    Uses the episode page URL to extract the embedded YouTube video ID
-    and then fetches the transcript using the YouTubeTranscriptApi.
-    """
-    video_id = extract_youtube_video_id_from_url(page_url)
-    if video_id is None:
-        raise Exception("No YouTube video found on the page.")
-    transcript_list = YouTubeTranscriptApi.get_transcript(video_id)
-    transcript = " ".join(entry["text"] for entry in transcript_list)
-    return transcript
 
 def summarize_transcript(transcript):
     """
@@ -92,17 +82,19 @@ def summarize_transcript(transcript):
     summary = response.text.strip()
     return summary
 
-async def post_to_telegram(summary, title, video_url):
+
+async def post_to_telegram(summary, title, youtube_link):
     """
-    Posts the episode title, link, and summary to your Telegram channel.
+    Posts the episode title, YouTube link, and summary to your Telegram channel.
     """
     bot = Bot(token=TELEGRAM_BOT_TOKEN)
     message = (
         f"New Huberman Lab Episode: {title}\n"
-        f"Link: {video_url}\n\n"
+        f"Watch here: {youtube_link}\n\n"
         f"Summary:\n{summary}"
     )
     await bot.send_message(chat_id=TELEGRAM_CHAT_ID, text=message)
+
 
 def check_new_episode():
     """
@@ -117,6 +109,7 @@ def check_new_episode():
     latest_id = latest_entry.get("yt_videoid", latest_entry.get("id"))
     return latest_entry, latest_id
 
+
 def load_last_episode_id():
     """
     Loads the ID of the last processed episode from a file.
@@ -126,12 +119,14 @@ def load_last_episode_id():
             return f.read().strip()
     return None
 
+
 def save_last_episode_id(episode_id):
     """
     Saves the latest episode ID to file for future checks.
     """
     with open(LAST_EPISODE_FILE, "w") as f:
         f.write(episode_id)
+
 
 async def main():
     episode, latest_id = check_new_episode()
@@ -147,15 +142,28 @@ async def main():
         logging.info("New episode found!")
         save_last_episode_id(latest_id)
         # The episode link from the RSS feed points to the Huberman Lab page.
-        video_page_url = episode.link
+        page_url = episode.link
         title = episode.title
-        try:
-            transcript = get_youtube_transcript_from_page(video_page_url)
-        except Exception as e:
-            logging.error(f"Error fetching transcript: {e}")
+
+        # Extract the YouTube video ID from the episode page
+        youtube_video_id = extract_youtube_video_id_from_url(page_url)
+        if youtube_video_id is None:
+            logging.error("No YouTube video found on the page.")
             transcript = "Transcript unavailable."
+            # Fallback: use the original page URL
+            youtube_link = page_url
+        else:
+            # Build a standard YouTube watch URL from the video ID
+            youtube_link = f"https://www.youtube.com/watch?v={youtube_video_id}"
+            try:
+                transcript_list = YouTubeTranscriptApi.get_transcript(youtube_video_id)
+                transcript = " ".join(entry["text"] for entry in transcript_list)
+            except Exception as e:
+                logging.error(f"Error fetching transcript: {e}")
+                transcript = "Transcript unavailable."
         summary = summarize_transcript(transcript)
-        await post_to_telegram(summary, title, video_page_url)
+        await post_to_telegram(summary, title, youtube_link)
+
 
 if __name__ == "__main__":
     asyncio.run(main())
