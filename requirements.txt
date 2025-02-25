@@ -1,0 +1,7 @@
+youtube_transcript_api==0.4.1
+google-generativeai
+python-telegram-bot
+nest_asyncio
+feedparser
+requests
+beautifulsoup4
