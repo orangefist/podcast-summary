@@ -11,7 +11,10 @@ from bs4 import BeautifulSoup
 from youtube_transcript_api import YouTubeTranscriptApi
 import google.generativeai as genai
 from telegram import Bot
-from telegram.request.request import Request
+import nest_asyncio
+
+# Apply nest_asyncio to allow nested event loops (useful in notebooks or environments with running loops)
+nest_asyncio.apply()
 
 # Set up basic logging
 logging.basicConfig(level=logging.INFO)
@@ -28,7 +31,6 @@ if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID or not GEMINI_API_KEY:
 # Define constants
 HUBERMAN_RSS_FEED = "https://feeds.megaphone.fm/hubermanlab"
 LAST_EPISODE_FILE = "last_episode.txt"
-
 
 def extract_youtube_video_id_from_url(site_url):
     """
@@ -63,7 +65,6 @@ def extract_youtube_video_id_from_url(site_url):
             return match.group(1)
     return None
 
-
 def get_youtube_transcript_from_page(page_url):
     """
     Uses the episode page URL to extract the embedded YouTube video ID
@@ -76,10 +77,9 @@ def get_youtube_transcript_from_page(page_url):
     transcript = " ".join(entry["text"] for entry in transcript_list)
     return transcript
 
-
 def summarize_transcript(transcript):
     """
-    Summarizes the provided transcript using Google Gemini model.
+    Summarizes the provided transcript using the Google Gemini model.
     """
     genai.configure(api_key=GEMINI_API_KEY)
     model = genai.GenerativeModel('gemini-2.0-flash')
@@ -92,20 +92,17 @@ def summarize_transcript(transcript):
     summary = response.text.strip()
     return summary
 
-
 async def post_to_telegram(summary, title, video_url):
     """
     Posts the episode title, link, and summary to your Telegram channel.
     """
-    req = Request()
-    bot = Bot(token=TELEGRAM_BOT_TOKEN, request=req)
+    bot = Bot(token=TELEGRAM_BOT_TOKEN)
     message = (
         f"New Huberman Lab Episode: {title}\n"
         f"Link: {video_url}\n\n"
         f"Summary:\n{summary}"
     )
     await bot.send_message(chat_id=TELEGRAM_CHAT_ID, text=message)
-
 
 def check_new_episode():
     """
@@ -120,7 +117,6 @@ def check_new_episode():
     latest_id = latest_entry.get("yt_videoid", latest_entry.get("id"))
     return latest_entry, latest_id
 
-
 def load_last_episode_id():
     """
     Loads the ID of the last processed episode from a file.
@@ -130,14 +126,12 @@ def load_last_episode_id():
             return f.read().strip()
     return None
 
-
 def save_last_episode_id(episode_id):
     """
     Saves the latest episode ID to file for future checks.
     """
     with open(LAST_EPISODE_FILE, "w") as f:
         f.write(episode_id)
-
 
 async def main():
     episode, latest_id = check_new_episode()
@@ -163,7 +157,5 @@ async def main():
         summary = summarize_transcript(transcript)
         await post_to_telegram(summary, title, video_page_url)
 
-
 if __name__ == "__main__":
     asyncio.run(main())
-
