@@ -8,6 +8,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Check network access
+        run: curl -I https://www.youtube.com/
       - name: Checkout Repository
         uses: actions/checkout@v3
 
