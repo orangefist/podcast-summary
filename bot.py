@@ -38,7 +38,7 @@ def extract_youtube_video_id_from_url(site_url):
     Given a Huberman Lab episode URL, fetch the page HTML,
     parse its JSON‑LD structured data, and extract the YouTube video ID.
     """
-    response = requests.get(site_url)
+    response = requests.get(site_url, verify = False)
     response.raise_for_status()
     html_content = response.text
     soup = BeautifulSoup(html_content, "html.parser")
