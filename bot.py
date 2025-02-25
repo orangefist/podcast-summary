@@ -154,6 +154,7 @@ async def main():
             youtube_link = page_url
         else:
             # Build a standard YouTube watch URL from the video ID
+            print(youtube_video_id)
             youtube_link = f"https://www.youtube.com/watch?v={youtube_video_id}"
             try:
                 transcript_list = YouTubeTranscriptApi.get_transcript(youtube_video_id)
