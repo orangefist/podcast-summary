@@ -1,4 +1,4 @@
-youtube_transcript_api==0.6.3
+youtube_transcript_api
 google-generativeai
 python-telegram-bot
 nest_asyncio
