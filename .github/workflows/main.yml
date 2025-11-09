@@ -55,5 +55,3 @@ jobs:
         with:
           path: last_episode.txt
           key: last-episode-${{ github.run_id }}
-          retention-days: 14  # optional
-          
