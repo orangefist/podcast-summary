@@ -10,7 +10,7 @@ cache:
 
 run_script:
   stage: run
-  retry: 4
+  retry: 2
   script:
     # 1) Create venv
     - python -m venv venv
