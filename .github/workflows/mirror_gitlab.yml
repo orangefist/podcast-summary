@@ -2,9 +2,7 @@ name: Mirror to GitLab
 on:
   push:
     branches:
-      - "**"
-    tags:
-      - "*"
+      - "main"
 jobs:
   mirror:
     runs-on: ubuntu-latest
