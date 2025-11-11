@@ -1,0 +1,24 @@
+image: python:3.11
+
+stages:
+  - run
+
+cache:
+  key: last-episode
+  paths:
+    - last_episode.txt
+
+run_script:
+  stage: run
+  script:
+    # 1) Create venv
+    - python -m venv venv
+    # 2) Activate venv in the same job
+    - source venv/bin/activate
+    # 3) Install dependencies
+    - pip install --upgrade pip
+    - pip install -r requirements.txt
+    # 4) Run your script
+    - python bot.py
+  only:
+    - main   # or whichever branch you want
