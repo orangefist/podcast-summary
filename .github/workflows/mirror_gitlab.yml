@@ -12,5 +12,5 @@ jobs:
           fetch-depth: 0
       - name: Push --mirror to GitLab
         run: |
-          git remote add gitlab https://oauth2:${{ secrets.GITLAB_TOKEN }}@gitlab.com/AI/podcast-summary.git
+          git remote add gitlab https://oauth2:${{ secrets.GITLAB_TOKEN }}@gitlab.com/ai5272709/podcast-summary.git
           git push --mirror gitlab
