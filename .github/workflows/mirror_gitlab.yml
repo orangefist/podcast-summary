@@ -3,6 +3,8 @@ on:
   push:
     branches:
       - "**"
+    tags:
+      - "*"
 jobs:
   mirror:
     runs-on: ubuntu-latest
@@ -10,7 +12,12 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Push --mirror to GitLab
+      - name: Add GitLab remote
         run: |
           git remote add gitlab https://oauth2:${{ secrets.GITLAB_TOKEN }}@gitlab.com/ai5272709/podcast-summary-mirror.git
-          git push --mirror gitlab
+          git remote -v
+
+      - name: Push branches and tags
+        run: |
+          git push --prune gitlab "refs/heads/*:refs/heads/*"
+          git push --prune gitlab "refs/tags/*:refs/tags/*"
